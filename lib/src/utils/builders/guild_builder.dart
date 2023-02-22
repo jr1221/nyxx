@@ -1,4 +1,5 @@
 import 'package:nyxx/src/core/discord_color.dart';
+import 'package:nyxx/src/core/guild/role.dart';
 import 'package:nyxx/src/core/guild/system_channel_flags.dart';
 import 'package:nyxx/src/core/snowflake.dart';
 import 'package:nyxx/src/typedefs.dart';
@@ -121,5 +122,44 @@ class RoleBuilder extends Builder {
         if (roleIcon != null) "icon": roleIcon!.getBase64(),
         if (roleIconEmoji != null) "unicode_emoji": roleIconEmoji,
         if (id != null) "id": id!.id,
+      };
+}
+
+class ApplicationRoleConnectionMetadataBuilder extends Builder {
+  /// [`ApplicationRoleConnectionMetadataType`](https://discord.com/developers/docs/resources/application-role-connection-metadata#application-role-connection-metadata-object-application-role-connection-metadata-type)
+  ApplicationRoleConnectionMetadataType type;
+
+  /// Dictionary key for the metadata field (must be `a-z`, `0-9`, or `_` characters; 1-50 characters)
+  String key;
+
+  /// Name of the metadata field (1-100 characters)
+  String name;
+
+  /// Description of the metadata field (1-200 characters)
+  String description;
+
+  /// Translations of the name
+  Object? localizedNames;
+
+  /// Translations of the description
+  Object? localizedDescriptions;
+
+  ApplicationRoleConnectionMetadataBuilder({
+    required this.type,
+    required this.key,
+    required this.name,
+    required this.description,
+    this.localizedNames,
+    this.localizedDescriptions,
+  }) : assert(RegExp(r'[a-z0-9_]{1,50}').hasMatch(key));
+
+  @override
+  RawApiMap build() => <String, dynamic>{
+        "type": type.index,
+        "key": key,
+        "name": name,
+        "description": description,
+        if (localizedNames != null) "name_localizations": localizedNames,
+        if (localizedDescriptions != null) "description_localizations": localizedDescriptions,
       };
 }

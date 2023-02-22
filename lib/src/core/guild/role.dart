@@ -211,3 +211,81 @@ class RoleTags implements IRoleTags {
     integrationId = raw["integration_id"] != null ? Snowflake(raw["integration_id"]) : null;
   }
 }
+
+enum ApplicationRoleConnectionMetadataType {
+  integerLessThanOrEqual(1),
+  integerGreaterThanOrEqual(2),
+  integerEqual(3),
+  integerNotEqual(4),
+  datetimeLessThanOrEqual(5),
+  datetimeGreaterThanOrEqual(6),
+  booleanEqual(7),
+  booleanNotEqual(8);
+
+  final int _value;
+  const ApplicationRoleConnectionMetadataType(this._value);
+
+  static ApplicationRoleConnectionMetadataType _fromValue(int value) => values.firstWhere((element) => element._value == value);
+}
+
+abstract class IApplicationRoleConnectionMetadata {
+  /// The type of metadata value.
+  ApplicationRoleConnectionMetadataType get type;
+
+  /// Dictionary key for the metadata field (must be `a-z`, `0-9`, or `_` characters; 1-50 characters)
+  String get key;
+
+  /// Name of the metadata field (1-100 characters)
+  String get name;
+
+  /// Translations of the name.
+  // TODO(Rapougnac): Move `Locale` enum from `nyxx_interactions` to `nyxx`.
+  Object? get localizedNames;
+
+  /// Description of the metadata field (1-200 characters).
+  String get description;
+
+  /// Translations of the description.
+  Object? get localizedDescriptions;
+
+  ApplicationRoleConnectionMetadataBuilder toBuilder();
+}
+
+class ApplicationRoleConnectionMetadata implements IApplicationRoleConnectionMetadata {
+  @override
+  late final ApplicationRoleConnectionMetadataType type;
+
+  @override
+  late final String key;
+
+  @override
+  late final String name;
+
+  @override
+  late final Object? localizedNames;
+
+  @override
+  late final String description;
+
+  @override
+  late final Object? localizedDescriptions;
+
+  ApplicationRoleConnectionMetadata(RawApiMap raw) {
+    type = ApplicationRoleConnectionMetadataType._fromValue(raw["type"] as int);
+    key = raw["key"] as String;
+    name = raw["name"] as String;
+    localizedNames = raw["localized_names"];
+    description = raw["description"] as String;
+    localizedDescriptions = raw["localized_descriptions"];
+  }
+
+  @override
+  ApplicationRoleConnectionMetadataBuilder toBuilder() => ApplicationRoleConnectionMetadataBuilder(
+        key: key,
+        name: name,
+        description: description,
+        type: type,
+        localizedNames: localizedNames,
+        localizedDescriptions: localizedDescriptions,
+      );
+}

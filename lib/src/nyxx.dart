@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:logging/logging.dart';
 import 'package:nyxx/src/client_options.dart';
 import 'package:nyxx/src/core/channel/invite.dart';
+import 'package:nyxx/src/core/guild/role.dart';
 import 'package:nyxx/src/core/snowflake.dart';
 import 'package:nyxx/src/core/application/client_oauth2_application.dart';
 import 'package:nyxx/src/core/channel/channel.dart';
@@ -101,6 +102,13 @@ abstract class INyxxRest implements INyxx {
 
   /// Reference of event controller
   IRestEventController get eventsRest;
+
+  /// Fetches the application's role connections.
+  Stream<IApplicationRoleConnectionMetadata> fetchApplicationRoleConnectionMetadata();
+
+  /// Adds application role connections.
+  /// An application can have up to 5 metadata role connections.
+  Stream<IApplicationRoleConnectionMetadata> addApplicationRoleConnectionMetadata(List<ApplicationRoleConnectionMetadataBuilder> builders);
 }
 
 /// Lightweight client which do not start ws connections.
@@ -240,6 +248,13 @@ class NyxxRest extends INyxxRest {
     pluginInstance.onRegister(this, pluginInstance.logger);
     _plugins.add(pluginInstance);
   }
+
+  @override
+  Stream<IApplicationRoleConnectionMetadata> fetchApplicationRoleConnectionMetadata() => httpEndpoints.fetchApplicationRoleConnectionMetadata();
+
+  @override
+  Stream<IApplicationRoleConnectionMetadata> addApplicationRoleConnectionMetadata(List<ApplicationRoleConnectionMetadataBuilder> builders) =>
+      httpEndpoints.addApplicationRoleConnectionMetadata(builders);
 }
 
 abstract class INyxxWebsocket implements INyxxRest {

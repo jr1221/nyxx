@@ -363,7 +363,7 @@ abstract class IHttpEndpoints {
   /// Used to send a request including standard bot authentication.
   Future<IHttpResponse> sendRawRequest(IHttpRoute route, String method,
       {dynamic body,
-      Map<String, dynamic>? headers,
+      Map<String, String>? headers,
       List<AttachmentBuilder> files = const [],
       Map<String, dynamic>? queryParams,
       bool auth = false,
@@ -444,6 +444,10 @@ abstract class IHttpEndpoints {
   Future<IAutoModerationRule> editAutoModerationRule(Snowflake guildId, Snowflake ruleId, AutoModerationRuleBuilder builder, {String? auditReason});
 
   Future<void> deleteAutoModerationRule(Snowflake guildId, Snowflake ruleId, {String? auditReason});
+
+  Stream<IApplicationRoleConnectionMetadata> fetchApplicationRoleConnectionMetadata();
+
+  Stream<IApplicationRoleConnectionMetadata> addApplicationRoleConnectionMetadata(List<ApplicationRoleConnectionMetadataBuilder> builders);
 }
 
 class HttpEndpoints implements IHttpEndpoints {
@@ -1529,13 +1533,17 @@ class HttpEndpoints implements IHttpEndpoints {
   }
 
   @override
-  Future<HttpResponse> sendRawRequest(covariant HttpRoute route, String method,
-      {dynamic body,
-      Map<String, dynamic>? headers,
-      List<AttachmentBuilder> files = const [],
-      Map<String, dynamic>? queryParams,
-      bool auth = false,
-      bool rateLimit = true}) async {
+  Future<HttpResponse> sendRawRequest(
+    covariant HttpRoute route,
+    String method, {
+    dynamic body,
+    Map<String, String>? headers,
+    List<AttachmentBuilder> files = const [],
+    Map<String, dynamic>? queryParams,
+    bool auth = false,
+    bool rateLimit = true,
+    String? auditLog,
+  }) async {
     if (files.isNotEmpty) {
       return executeSafe(MultipartRequest(
         route,
@@ -1545,6 +1553,8 @@ class HttpEndpoints implements IHttpEndpoints {
         queryParams: queryParams,
         globalRateLimit: rateLimit,
         auth: auth,
+        headers: headers,
+        auditLog: auditLog,
       ));
     } else {
       return executeSafe(BasicRequest(
@@ -1554,6 +1564,8 @@ class HttpEndpoints implements IHttpEndpoints {
         queryParams: queryParams,
         globalRateLimit: rateLimit,
         auth: auth,
+        headers: headers,
+        auditLog: auditLog,
       ));
     }
   }
@@ -2023,5 +2035,39 @@ class HttpEndpoints implements IHttpEndpoints {
     );
 
     client.guilds[guildId]?.autoModerationRules.remove(ruleId);
+  }
+  
+  @override
+  Stream<IApplicationRoleConnectionMetadata> addApplicationRoleConnectionMetadata(List<ApplicationRoleConnectionMetadataBuilder> builders) async* {
+    final response = await executeSafe(
+      BasicRequest(
+        HttpRoute()
+          ..applications(id: client.appId.toString())
+          ..roleConnections()
+          ..metadata(),
+        method: 'POST',
+        body: builders.map((e) => e.build()).toList(),
+      ),
+    );
+
+    for (final rawMetadata in response.jsonBody as RawApiList) {
+      yield ApplicationRoleConnectionMetadata(rawMetadata as RawApiMap);
+    }
+  }
+  
+  @override
+  Stream<IApplicationRoleConnectionMetadata> fetchApplicationRoleConnectionMetadata() async* {
+    final response = await executeSafe(
+      BasicRequest(
+        HttpRoute()
+          ..applications(id: client.appId.toString())
+          ..roleConnections()
+          ..metadata(),
+      ),
+    );
+
+    for (final rawMetadata in response.jsonBody as RawApiList) {
+      yield ApplicationRoleConnectionMetadata(rawMetadata as RawApiMap);
+    }
   }
 }

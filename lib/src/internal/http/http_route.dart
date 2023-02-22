@@ -35,6 +35,12 @@ abstract class IHttpRoute {
   /// Adds the [`roles`](https://discord.com/developers/docs/resources/guild#get-guild-roles) part to this [IHttpRoute].
   void roles({String? id});
 
+  /// Adds the [`role-connections`](https://discord.com/developers/docs/resources/application-role-connection-metadata#get-application-role-connection-metadata-records) part to this [IHttpRoute].
+  void roleConnections();
+
+  /// Adds the [`metadata`](https://discord.com/developers/docs/resources/application-role-connection-metadata#get-application-role-connection-metadata-records) part to this [IHttpRoute].
+  void metadata();
+
   /// Adds the [`members`](https://discord.com/developers/docs/resources/guild#get-guild-member) part to this [IHttpRoute].
   void members({String? id});
 
@@ -188,6 +194,12 @@ class HttpRoute implements IHttpRoute {
 
   @override
   void roles({String? id}) => add(HttpRoutePart("roles", [if (id != null) HttpRouteParam(id)]));
+
+  @override
+  void roleConnections() => add(HttpRoutePart("role-connections"));
+
+  @override
+  void metadata() => add(HttpRoutePart("metadata"));
 
   @override
   void members({String? id}) => add(HttpRoutePart("members", [if (id != null) HttpRouteParam(id)]));
